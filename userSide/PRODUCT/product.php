@@ -1,9 +1,60 @@
+<?php
+require_once __DIR__ . '/../../PHP/db_connect.php';
+require_once __DIR__ . '/../../PHP/product_functions.php';
+
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if ($id === null || $id === false) {
+    http_response_code(400);
+    echo 'Missing or invalid product ID.';
+    exit;
+}
+
+if (!$pdo) {
+    http_response_code(500);
+    echo 'Database connection not available.';
+    exit;
+}
+
+try {
+    $product = getProductById($pdo, $id);
+    if (!$product) {
+        http_response_code(404);
+        echo "Product with ID {$id} not found.";
+        exit;
+    }
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo 'Error fetching product: ' . htmlspecialchars($e->getMessage());
+    exit;
+}
+
+$category = $product['Category'] ?? '';
+$categoryLower = strtolower($category);
+$backLink = $categoryLower . '.html';
+$searchPlaceholder = 'Search ' . $categoryLower . '...';
+
+switch ($categoryLower) {
+    case 'bread':
+        $bgImage = 'breads/bread/b.jpg';
+        break;
+    case 'pastry':
+        $bgImage = 'pastry/images/p.jpg';
+        break;
+    case 'cakes':
+        $bgImage = 'cakes/cakes/c.jpg';
+        break;
+    default:
+        $bgImage = '';
+}
+
+$price = isset($product['Price']) ? number_format((float)$product['Price'], 2) : '0.00';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cindys–Product/pastry</title>
+  <title><?= htmlspecialchars($product['Name']) ?></title>
 
   <style>
     * {
@@ -16,7 +67,6 @@
       overflow: hidden;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       color: #000;
-    
     }
 
     .background-blur {
@@ -25,7 +75,7 @@
       left: 0;
       height: 100%;
       width: 100%;
-      background: url('../breads/bread/b.jpg') no-repeat center center fixed;
+      background: url('<?= htmlspecialchars($bgImage) ?>') no-repeat center center fixed;
       background-size: cover;
       filter: blur(5px) brightness(0.85);
       z-index: -1;
@@ -253,9 +303,9 @@
   <div class="wrapper">
     <div class="content-wrapper">
       <div class="top-bar">
-        <a href="../bread.html">&larr; Back to Home</a>
+        <a href="<?= htmlspecialchars($backLink) ?>">&larr; Back to Home</a>
         <div class="search-box">
-          <input id="searchInput" type="text" placeholder="Search bread...">
+          <input id="searchInput" type="text" placeholder="<?= htmlspecialchars($searchPlaceholder) ?>">
         </div>
       </div>
     </div>
@@ -263,20 +313,22 @@
     <div class="container">
       <div class="image-section">
         <div class="circle-bg"></div>
-        <img src="../breads/bread/bread7.png" alt="DELIGHTFUL TREATS CHOCO CRINKLES COOKIES" />
+        <?php if (!empty($product['Image_Path'])): ?>
+          <img src="../../adminSide/products/uploads/<?= htmlspecialchars($product['Image_Path']) ?>" alt="<?= htmlspecialchars($product['Name']) ?>" />
+        <?php endif; ?>
       </div>
 
       <div class="details-section">
         <div class="breadcrumb">
-          Categories > <strong>Bread</strong>
+          Categories > <strong><?= htmlspecialchars($category) ?></strong>
         </div>
         <div class="price-row">
-          <div class="price">Php 100.00</div>
+          <div class="price">Php <?= htmlspecialchars($price) ?></div>
           <span class="favorite-icon" onclick="toggleFavorite(this)">❤️</span>
         </div>
-        <div class="stock">Stock: 20</div>
-        <h2>DELIGHTFUL TREATS CHOCO CRINKLES COOKIES</h2>
-        <p>Classic chocolate crinkle cookies</p>
+        <div class="stock">Stock: <?= htmlspecialchars($product['Stock_Quantity'] ?? '') ?></div>
+        <h2><?= htmlspecialchars($product['Name']) ?></h2>
+        <p><?= htmlspecialchars($product['Description'] ?? '') ?></p>
 
         <div class="quantity-controls">
           <span>Qty:</span>
@@ -294,9 +346,10 @@
     </div>
   </div>
 
+  <script src="js/cart.js"></script>
   <script>
     function changeQty(delta) {
-      const qty = document.getElementById("qty");
+      const qty = document.getElementById('qty');
       let current = parseInt(qty.value);
       current = isNaN(current) ? 1 : current;
       current += delta;
@@ -305,23 +358,20 @@
     }
 
     function toggleFavorite(el) {
-      el.textContent = el.textContent === "❤️" ? "💖" : "❤️";
-      alert(el.textContent === "💖" ? "Added to favorites!" : "Removed from favorites.");
-    }
-
-    function addToCart() {
-      const qty = document.getElementById("qty").value;
-      alert(`Added ${qty} item(s) to your cart!`);
-    }
-
-    function buyNow() {
-      const qty = document.getElementById("qty").value;
-      alert(`Proceeding to checkout with ${qty} item(s).`);
+      el.textContent = el.textContent === '❤️' ? '💖' : '❤️';
+      alert(el.textContent === '💖' ? 'Added to favorites!' : 'Removed from favorites.');
     }
 
     function shareNow() {
-      alert("Product link copied to clipboard!");
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href)
+          .then(() => alert('Product link copied to clipboard!'))
+          .catch(() => alert('Failed to copy link.'));
+      } else {
+        alert('Clipboard not supported.');
+      }
     }
   </script>
 </body>
 </html>
+
