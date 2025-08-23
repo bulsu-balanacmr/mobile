@@ -31,7 +31,7 @@ include '../header.php';
             <input type="text" id="searchOrder" placeholder="Search Order ID" class="border rounded px-2 py-1 text-sm">
             <input type="date" id="startDate" class="border rounded px-2 py-1 text-sm">
             <input type="date" id="endDate" class="border rounded px-2 py-1 text-sm">
-            <a href="../../PHP/export_orders_csv.php" class="bg-gray-300 px-4 py-1 rounded text-sm">Export Orders</a>
+            <button onclick="exportOrdersToPDF()" class="bg-gray-300 px-4 py-1 rounded text-sm">Export Orders</button>
           </div>
           <div class="flex space-x-4 mb-2 text-sm">
             <button onclick="filterOrders('all')" class="tab-active">All</button>
@@ -83,7 +83,42 @@ include '../header.php';
   </div>
 
   <!-- Sidebar Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   <script>
+    function exportOrdersToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape' });
+      doc.setFontSize(10);
+      doc.text("Orders Report", 14, 15);
+
+      const headers = ["Order ID", "Order Date", "Customer", "Items", "Total", "Status"];
+      const rows = [];
+
+      document.querySelectorAll('#orderTable tr').forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length) {
+          rows.push([
+            cells[1].innerText.trim(),
+            cells[2].innerText.trim(),
+            cells[3].innerText.trim(),
+            cells[4].innerText.trim(),
+            cells[5].innerText.trim(),
+            cells[6].innerText.trim()
+          ]);
+        }
+      });
+
+      doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 20,
+        styles: { fontSize: 8 }
+      });
+
+      doc.save('orders.pdf');
+    }
+
     let currentStatus = 'all';
 
     function filterOrders(status) {

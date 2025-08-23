@@ -45,7 +45,7 @@ include '../header.php';
         <option>Last 30 days</option>
         <option>This Month</option>
       </select>
-      <button class="export-btn" onclick="exportTableToCSV()">Export CSV</button>
+      <button class="export-btn" onclick="exportTableToPDF()">Export PDF</button>
     </div>
 
     <!-- Sales Summary Cards -->
@@ -105,6 +105,8 @@ include '../header.php';
     </table>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
   <script>
     const notifications = [
       "⚠️ Low Stock: Chocolate Cake (2 left)",
@@ -145,26 +147,39 @@ include '../header.php';
       }
     });
 
-    function sanitizeCSVCell(value) {
-      value = value.replace(/"/g, '""');
-      if (/^[=+\-@]/.test(value)) {
-        value = "'" + value;
-      }
-      return `"${value}"`;
-    }
+    function exportTableToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape' });
+      doc.setFontSize(10);
+      doc.text('Finance & Sales Report', 14, 15);
 
-    function exportTableToCSV() {
-      const table = document.getElementById("reportTable");
-      let csv = [];
-      for (let row of table.rows) {
-        let cols = Array.from(row.cells).map(cell => sanitizeCSVCell(cell.innerText.trim()));
-        csv.push(cols.join(","));
-      }
-      const csvContent = "data:text/csv;charset=utf-8," + csv.join("\n");
-      const link = document.createElement("a");
-      link.setAttribute("href", csvContent);
-      link.setAttribute("download", "finance_sales_report.csv");
-      link.click();
+      const headers = [
+        'Transaction ID',
+        'Order ID',
+        'Date',
+        'Customer',
+        'Product Total',
+        'Amount Paid',
+        'Payment Method',
+        'Status',
+        'Payment Date',
+        'Reference Number'
+      ];
+
+      const rows = [];
+      document.querySelectorAll('#reportTable tbody tr').forEach(row => {
+        const cells = Array.from(row.cells).map(cell => cell.innerText.trim());
+        rows.push(cells);
+      });
+
+      doc.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 20,
+        styles: { fontSize: 8 }
+      });
+
+      doc.save('finance_sales_report.pdf');
     }
 
     const barCtx = document.getElementById("barChart").getContext("2d");
