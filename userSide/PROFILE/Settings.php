@@ -305,6 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $userId) {
     </form>
   </div>
 
+  <script type="module" src="../firebase-init.js"></script>
   <script>
     function toggleDropdown() {
       const dropdown = document.getElementById("profileDropdown");
