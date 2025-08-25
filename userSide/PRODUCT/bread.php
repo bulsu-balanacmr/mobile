@@ -12,124 +12,17 @@ if ($pdo) {
 <head>
   <meta charset="UTF-8">
   <title>Cindy's Bread Menu</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      background: url('../Images/bread/b.jpg') no-repeat center center fixed;
-      background-size: cover;
-    }
-
-    .content-wrapper {
-      background-color: rgba(255, 255, 255, 0.85);
-      margin: 20px auto;
-      padding: 20px;
-      border-radius: 15px;
-      max-width: 1300px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .top-bar a {
-      font-weight: bold;
-      color: red;
-      text-decoration: none;
-      font-size: 18px;
-    }
-
-    .top-bar a:hover {
-      text-decoration: underline;
-    }
-
-    .search-box input {
-      padding: 8px 15px;
-      width: 220px;
-      border-radius: 30px;
-      border: 2px solid black;
-      outline: none;
-    }
-
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 25px;
-      padding: 20px 40px;
-    }
-
-    .product-card {
-      background: white;
-      border: 2px solid red;
-      border-radius: 15px;
-      padding: 10px;
-      text-align: center;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s;
-      cursor: pointer;
-    }
-
-    .product-card:hover {
-      transform: scale(1.03);
-    }
-
-    .product-card img {
-      max-width: 160px;
-      height: auto;
-      margin-bottom: 10px;
-    }
-
-    .product-name {
-      font-weight: bold;
-      font-size: 14px;
-      margin-bottom: 5px;
-    }
-
-    .price-stock {
-      font-size: 13px;
-      margin-bottom: 10px;
-    }
-     .buttons {
-      display: flex;
-      justify-content: space-between;
-      gap: 5px;
-    }
-    .buttons button {
-      flex: 1;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: bold;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .add-btn {
-      background: #ffff66;
-    }
-    .buy-btn {
-      background: #b6ff00;
-    }
-    .add-btn:hover,
-    .buy-btn:hover {
-      background: black;
-      color: white;
-    }
-  </style>
+  <link rel="stylesheet" href="../styles.css" />
 </head>
-<body>
-  <div class="content-wrapper">
-    <div class="top-bar">
-      <a href="MENU.html">&larr; Back to Menu</a>
-      <div class="search-box">
-        <input id="searchInput" type="text" placeholder="Search bread...">
+<body class="product-category bread-page">
+    <div class="content-wrapper">
+      <div class="top-bar">
+        <a href="MENU.php" class="back-link">&larr; Back to Menu</a>
+        <div class="search-box">
+          <input id="searchInput" type="text" placeholder="Search bread...">
+        </div>
       </div>
-    </div>
-
-    <div class="products-grid">
+      <div class="products-grid">
       <?php foreach ($products as $product): ?>
         <div class="product-card" onclick="goToProduct(<?= htmlspecialchars($product['Product_ID']) ?>)">
           <?php if (!empty($product['Image_Path'])): ?>
@@ -143,34 +36,45 @@ if ($pdo) {
           </div>
         </div>
       <?php endforeach; ?>
+      </div>
+
+      <p id="no-results">No products found.</p>
+
     </div>
 
-    <p id="no-results" style="text-align: center; font-weight: bold; font-size: 18px; display: none;">No products found.</p>
-  </div>
+<p id="no-results" style="text-align: center; font-weight: bold; font-size: 18px; display: none;">
+  No products found.
+</p>
 
-  <script>
-    // Search Functionality
-    const searchInput = document.getElementById('searchInput');
-    const productCards = document.querySelectorAll('.product-card');
-    const noResults = document.getElementById('no-results');
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const productCards = Array.from(document.querySelectorAll('.product-card'));
+  const noResults = document.getElementById('no-results');
 
-    searchInput.addEventListener('input', () => {
-      const searchTerm = searchInput.value.toLowerCase();
-      let matches = 0;
+  function applyFilter() {
+    const searchTerm = (searchInput.value || '').toLowerCase().trim();
+    let matches = 0;
 
-      productCards.forEach(card => {
-        const productName = card.querySelector('.product-name').textContent.toLowerCase();
-        const isMatch = productName.includes(searchTerm);
-        card.style.display = isMatch ? 'block' : 'none';
-        if (isMatch) matches++;
-      });
-
-      noResults.style.display = matches === 0 ? 'block' : 'none';
+    productCards.forEach(card => {
+      const nameEl = card.querySelector('.product-name');
+      const productName = (nameEl ? nameEl.textContent : '').toLowerCase();
+      const isMatch = !searchTerm || productName.includes(searchTerm);
+      // Use '' (empty string) to restore default display so the grid stays intact
+      card.style.display = isMatch ? '' : 'none';
+      if (isMatch) matches++;
     });
 
-    function goToProduct(id) {
-      window.location.href = `product.php?id=${id}`;
-    }
-  </script>
+    noResults.style.display = matches === 0 ? '' : 'none';
+  }
+
+  searchInput.addEventListener('input', applyFilter);
+  // Run once on load in case list is empty or pre-filtered
+  applyFilter();
+
+  function goToProduct(id) {
+    window.location.href = `product.php?id=${encodeURIComponent(id)}`;
+  }
+</script>
+
 </body>
 </html>
