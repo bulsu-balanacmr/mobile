@@ -27,7 +27,7 @@ switch ($action) {
             $items = [];
         } else {
             $cartId = $cart['Cart_ID'];
-            $stmt = $pdo->prepare("SELECT ci.Cart_Item_ID, ci.Product_ID, ci.Quantity, p.Name, p.Price, p.Image_Path FROM cart_item ci JOIN product p ON ci.Product_ID = p.Product_ID WHERE ci.Cart_ID = :cart_id");
+            $stmt = $pdo->prepare("SELECT ci.Cart_Item_ID, ci.Product_ID, ci.Quantity, p.Name, p.Price, p.Stock_Quantity, p.Image_Path FROM cart_item ci JOIN product p ON ci.Product_ID = p.Product_ID WHERE ci.Cart_ID = :cart_id");
             $stmt->execute([':cart_id' => $cartId]);
             $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
@@ -59,14 +59,25 @@ switch ($action) {
             $cartId = $cart ? $cart['Cart_ID'] : createCart($pdo, $userId);
         }
 
-        $id = addCartItem($pdo, $cartId, $productId, $qty);
-        echo json_encode(['cart_item_id' => $id, 'cart_id' => $cartId]);
+        $existing = getCartItemByCartAndProduct($pdo, $cartId, $productId);
+        if ($existing) {
+            $newQty = $existing['Quantity'] + $qty;
+            $updated = updateCartItemQuantity($pdo, $existing['Cart_Item_ID'], $newQty);
+            echo json_encode(['cart_item_id' => $existing['Cart_Item_ID'], 'cart_id' => $cartId, 'updated' => $updated]);
+        } else {
+            $id = addCartItem($pdo, $cartId, $productId, $qty);
+            echo json_encode(['cart_item_id' => $id, 'cart_id' => $cartId]);
+        }
         break;
     case 'update':
         $cartItemId = (int)($_POST['cart_item_id'] ?? 0);
         $qty = (int)($_POST['quantity'] ?? 1);
-        $updated = updateCartItemQuantity($pdo, $cartItemId, $qty);
-        echo json_encode(['updated' => $updated]);
+        $result = updateCartItemQuantity($pdo, $cartItemId, $qty);
+        if ($qty <= 0) {
+            echo json_encode(['deleted' => $result]);
+        } else {
+            echo json_encode(['updated' => $result]);
+        }
         break;
     case 'remove':
         $cartItemId = (int)($_POST['cart_item_id'] ?? 0);

@@ -195,6 +195,7 @@
         div.setAttribute('data-id', item.Cart_Item_ID);
         div.setAttribute('data-product', item.Product_ID);
         div.setAttribute('data-price', item.Price);
+        div.setAttribute('data-stock', item.Stock_Quantity);
         div.innerHTML = `
           <div class="cart-item-left">
             <input type="checkbox" class="item-check" checked>
@@ -275,11 +276,17 @@
     }
 
     function saveQty(button, newQty) {
-      const id = button.closest('.cart-item').getAttribute('data-id');
+      const item = button.closest('.cart-item');
+      const id = item.getAttribute('data-id');
       fetch('../../PHP/cart_api.php?action=update', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: `cart_item_id=${id}&quantity=${newQty}`
+      }).then(() => {
+        if (newQty <= 0) {
+          item.remove();
+        }
+        updateTotal();
       });
     }
 
@@ -321,9 +328,24 @@
       document.querySelectorAll('.cart-item').forEach(item => {
         const checkbox = item.querySelector('.item-check');
         if (checkbox.checked) {
-          hasItem = true;
           const name = item.querySelector('.item-details b').textContent;
-          const qty = item.querySelector('.qty-display').textContent;
+          let qty = parseInt(item.querySelector('.qty-display').textContent, 10);
+          const stock = parseInt(item.getAttribute('data-stock'), 10);
+          if (qty > stock) {
+            if (stock <= 0) {
+              alert(`${name} is out of stock and has been removed from your cart.`);
+              saveQty(item.querySelector('.increase-btn'), 0);
+              return;
+            }
+            alert(`${name} quantity reduced to available stock of ${stock}.`);
+            qty = stock;
+            item.querySelector('.qty-display').textContent = stock;
+            saveQty(item.querySelector('.increase-btn'), stock);
+          }
+          if (qty <= 0) {
+            return;
+          }
+          hasItem = true;
           const price = parseFloat(item.getAttribute('data-price'));
           const total = price * qty;
 
@@ -331,9 +353,11 @@
           div.classList.add("summary-item");
           div.innerHTML = `<span>${name} x${qty}</span><span>₱${total.toFixed(2)}</span>`;
           checkoutItems.appendChild(div);
-          checkoutData.push({product_id: item.getAttribute('data-product'), quantity: parseInt(qty)});
+          checkoutData.push({product_id: item.getAttribute('data-product'), quantity: qty});
         }
       });
+
+      updateTotal();
 
       if (!hasItem) {
         alert("Please select at least one item to check out.");
@@ -349,12 +373,36 @@
       document.getElementById("cart-section").style.display = "block";
     }
 
-    function placeOrder(e) {
+    async function placeOrder(e) {
       e.preventDefault();
       const name = document.getElementById("name").value;
       const address = document.getElementById("address").value;
       const orderType = document.getElementById("order-type").value;
       const mop = document.getElementById("mop").value;
+
+      const res = await fetch(`../../PHP/cart_api.php?action=list&email=${encodeURIComponent(userEmail)}`);
+      const latest = await res.json();
+      const shortages = [];
+      latest.items.forEach(it => {
+        const sel = checkoutData.find(c => c.product_id == it.Product_ID);
+        if (sel && sel.quantity > parseInt(it.Stock_Quantity, 10)) {
+          shortages.push({ id: it.Cart_Item_ID, name: it.Name, stock: parseInt(it.Stock_Quantity, 10) });
+        }
+      });
+
+      if (shortages.length) {
+        await Promise.all(shortages.map(s => fetch('../../PHP/cart_api.php?action=update', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: `cart_item_id=${s.id}&quantity=${s.stock}`
+        })));
+        alert(shortages.map(s => `${s.name} quantity reduced to available stock of ${s.stock}.`).join('\n'));
+        loadCart();
+        document.getElementById("checkout-section").style.display = "none";
+        document.getElementById("cart-section").style.display = "block";
+        return;
+      }
+
       fetch('../../PHP/order_api.php?action=create', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},

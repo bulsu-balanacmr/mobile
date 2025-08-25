@@ -42,6 +42,9 @@ function getCartItemById($pdo, $cartItemId) {
 
 // 5) Update quantity of a cart item
 function updateCartItemQuantity($pdo, $cartItemId, $quantity) {
+    if ($quantity <= 0) {
+        return deleteCartItemById($pdo, $cartItemId);
+    }
     $stmt = $pdo->prepare("
         UPDATE cart_item
         SET Quantity = :quantity
@@ -79,5 +82,17 @@ function deleteCartItemsByProductId($pdo, $productId) {
     ");
     $stmt->execute([':product_id' => $productId]);
     return $stmt->rowCount();
+}
+
+// 9) Get a cart item by cart and product
+function getCartItemByCartAndProduct($pdo, $cartId, $productId) {
+    $stmt = $pdo->prepare("
+        SELECT * FROM cart_item WHERE Cart_ID = :cart_id AND Product_ID = :product_id
+    ");
+    $stmt->execute([
+        ':cart_id' => $cartId,
+        ':product_id' => $productId
+    ]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 ?>

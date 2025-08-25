@@ -4,6 +4,10 @@ require_once 'order_functions.php';
 require_once 'order_item_functions.php';
 require_once 'transaction_functions.php';
 require_once 'user_functions.php';
+require_once 'inventory_functions.php';
+require_once 'product_functions.php';
+require_once 'cart_functions.php';
+require_once 'cart_item_functions.php';
 
 header('Content-Type: application/json');
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
@@ -40,6 +44,16 @@ switch ($action) {
         }
         $items = json_decode($_POST['items'] ?? '[]', true);
         $mop   = $_POST['mop'] ?? '';
+
+        foreach ($items as $it) {
+            $inventory = getInventoryByProductId($pdo, $it['product_id']);
+            if (!$inventory || $inventory['Stock_Quantity'] < $it['quantity']) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Insufficient stock for product ID ' . $it['product_id']]);
+                exit;
+            }
+        }
+
         $orderId = addOrder($pdo, $userId, date('Y-m-d'), 'Pending');
         $total = 0;
         foreach ($items as $it) {
@@ -49,8 +63,14 @@ switch ($action) {
             $subtotal = $price * $it['quantity'];
             $total += $subtotal;
             addOrderItem($pdo, $orderId, $it['product_id'], $it['quantity'], $subtotal);
+            adjustInventoryStock($pdo, $it['product_id'], -$it['quantity']);
+            adjustProductStock($pdo, $it['product_id'], -$it['quantity']);
         }
         addTransaction($pdo, $orderId, $mop, 'Pending', date('Y-m-d'), $total, null);
+        $cart = getCartByUserId($pdo, $userId);
+        if ($cart) {
+            deleteCartItemsByCartId($pdo, $cart['Cart_ID']);
+        }
         echo json_encode(['order_id' => $orderId]);
         break;
     case 'view':
