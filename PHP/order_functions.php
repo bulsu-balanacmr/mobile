@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/notification_functions.php';
 // 1) Create a new order
 function addOrder($pdo, $userId, $orderDate, $status) {
     $stmt = $pdo->prepare("
@@ -11,9 +10,7 @@ function addOrder($pdo, $userId, $orderDate, $status) {
         ':order_date' => $orderDate,
         ':status' => $status
     ]);
-    $orderId = $pdo->lastInsertId();
-    addNotification($pdo, 'order', 'New order #' . $orderId, $orderId);
-    return $orderId;
+    return $pdo->lastInsertId();
 }
 
 // 2) Get all orders

@@ -1,5 +1,4 @@
 <?php
-require_once 'notification_functions.php';
 // 1) Add inventory entry for a product
 function addInventory($pdo, $productId, $stockQuantity) {
     $stmt = $pdo->prepare("
@@ -38,21 +37,6 @@ function getInventoryWithProducts($pdo) {
     return $stmt->fetchAll();
 }
 
-function notifyLowStock($pdo, $productId) {
-    $stmt = $pdo->prepare(
-        "SELECT p.Name, i.Stock_Quantity
-         FROM Inventory i
-         JOIN Product p ON i.Product_ID = p.Product_ID
-         WHERE i.Product_ID = :id"
-    );
-    $stmt->execute([':id' => $productId]);
-    $row = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($row && $row['Stock_Quantity'] !== null && $row['Stock_Quantity'] < 5) {
-        $message = 'Low stock: ' . $row['Name'] . ' (' . $row['Stock_Quantity'] . ' left)';
-        addNotification($pdo, 'low_stock', $message, $productId);
-    }
-}
-
 // 4) Update stock quantity for a product
 function updateInventoryStock($pdo, $productId, $stockQuantity) {
     $stmt = $pdo->prepare("
@@ -64,7 +48,6 @@ function updateInventoryStock($pdo, $productId, $stockQuantity) {
         ':stock_quantity' => $stockQuantity,
         ':product_id' => $productId
     ]);
-    notifyLowStock($pdo, $productId);
     return $stmt->rowCount();
 }
 
@@ -79,7 +62,6 @@ function adjustInventoryStock($pdo, $productId, $quantityChange) {
         ':quantity_change' => $quantityChange,
         ':product_id' => $productId
     ]);
-    notifyLowStock($pdo, $productId);
     return $stmt->rowCount();
 }
 
