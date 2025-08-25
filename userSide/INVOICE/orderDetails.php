@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="../styles.css" />
 </head>
 <body class="invoice-page">
+<?php include __DIR__ . '/../topbar.php'; ?>
 
 <div class="invoice-container" id="invoice">
   <h1>Order Invoice</h1>
@@ -28,7 +29,7 @@
 
   <div class="total">Total: ₱<span id="total"></span></div>
 
-  <a class="back-btn" href="../PRODUCT/MENU.html">← Back to Home</a>
+ <a class="back-btn" href="../PRODUCT/MENU.php">← Back to Home</a>
   <button id="download-btn" class="back-btn">⬇ Download PDF</button>
 </div>
 
