@@ -348,40 +348,65 @@
       const orderType = document.getElementById("order-type").value;
       const mop = document.getElementById("mop").value;
 
-      const res = await fetch(`../../PHP/cart_api.php?action=list&email=${encodeURIComponent(userEmail)}`);
-      const latest = await res.json();
-      const shortages = [];
-      latest.items.forEach(it => {
-        const sel = checkoutData.find(c => c.product_id == it.Product_ID);
-        if (sel && sel.quantity > parseInt(it.Stock_Quantity, 10)) {
-          shortages.push({ id: it.Cart_Item_ID, name: it.Name, stock: parseInt(it.Stock_Quantity, 10) });
+      try {
+        const res = await fetch(`../../PHP/cart_api.php?action=list&email=${encodeURIComponent(userEmail)}`);
+        const cartType = res.headers.get('Content-Type') || '';
+        const cartText = await res.text();
+        if (!res.ok || !cartType.includes('application/json')) {
+          throw new Error(cartText);
         }
-      });
+        let latest;
+        try {
+          latest = JSON.parse(cartText);
+        } catch {
+          throw new Error(cartText);
+        }
+        const shortages = [];
+        latest.items.forEach(it => {
+          const sel = checkoutData.find(c => c.product_id == it.Product_ID);
+          if (sel && sel.quantity > parseInt(it.Stock_Quantity, 10)) {
+            shortages.push({ id: it.Cart_Item_ID, name: it.Name, stock: parseInt(it.Stock_Quantity, 10) });
+          }
+        });
 
-      if (shortages.length) {
-        await Promise.all(shortages.map(s => fetch('../../PHP/cart_api.php?action=update', {
+        if (shortages.length) {
+          await Promise.all(shortages.map(s => fetch('../../PHP/cart_api.php?action=update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `cart_item_id=${s.id}&quantity=${s.stock}`
+          })));
+          alert(shortages.map(s => `${s.name} quantity reduced to available stock of ${s.stock}.`).join('\n'));
+          loadCart();
+          document.getElementById("checkout-section").style.display = "none";
+          document.getElementById("cart-section").style.display = "block";
+          return;
+        }
+
+        const orderRes = await fetch('../../PHP/order_api.php?action=create', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: `cart_item_id=${s.id}&quantity=${s.stock}`
-        })));
-        alert(shortages.map(s => `${s.name} quantity reduced to available stock of ${s.stock}.`).join('\n'));
-        loadCart();
-        document.getElementById("checkout-section").style.display = "none";
-        document.getElementById("cart-section").style.display = "block";
-        return;
-      }
+          body: `email=${encodeURIComponent(userEmail)}&items=${encodeURIComponent(JSON.stringify(checkoutData))}&order_type=${encodeURIComponent(orderType)}&mop=${encodeURIComponent(mop)}`
+        });
 
-      fetch('../../PHP/order_api.php?action=create', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `email=${encodeURIComponent(userEmail)}&items=${encodeURIComponent(JSON.stringify(checkoutData))}&order_type=${encodeURIComponent(orderType)}&mop=${encodeURIComponent(mop)}`
-      })
-      .then(res => res.json())
-      .then(data => {
+        const orderTypeHeader = orderRes.headers.get('Content-Type') || '';
+        const orderText = await orderRes.text();
+        if (!orderRes.ok || !orderTypeHeader.includes('application/json')) {
+          throw new Error(orderText);
+        }
+        let data;
+        try {
+          data = JSON.parse(orderText);
+        } catch {
+          throw new Error(orderText);
+        }
+
         document.getElementById("confirmationMsg").innerHTML =
           `🎉 Thank you, <b>${name}</b>! Your order has been placed. <br><br><a href="../INVOICE/orderDetails.php?order_id=${data.order_id}" style="color:blue;text-decoration:underline;">👉 View Order Details</a>`;
         loadCart();
-      });
+      } catch (err) {
+        console.error('Error placing order:', err);
+        document.getElementById("confirmationMsg").textContent = 'There was a problem placing your order. Please try again.';
+      }
     }
 
     // Expose functions for inline event handlers
