@@ -14,4 +14,8 @@ Thumbs.db
 *.swp
 
 .env
+# Uploaded files
+user_faces/
+
 vendor/
+
