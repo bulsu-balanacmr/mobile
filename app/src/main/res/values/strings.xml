@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">riderapp</string>
+    <string name="register">Register</string>
+    <string name="example_gmail_com">example@gmail.com</string>
+    <string name="checkout">Checkout</string>
+    <string name="login">Login</string>
+    <string name="get_started">Get Started</string>
+    <string name="landing_title">Welcome to RiderApp</string>
+    <!-- Add all other strings you use in layouts -->
+</resources>

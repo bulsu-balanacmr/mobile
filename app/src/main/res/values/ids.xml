@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="btnCheckout" type="id"/>
+    <item name="btnLogin" type="id"/>
+    <item name="btnRegister" type="id"/>
+    <!-- Add other IDs used in your layouts -->
+</resources>

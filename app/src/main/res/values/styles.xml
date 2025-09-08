@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- app-level theme items -->
+    </style>
+
+    <style name="CustomEditText">
+        <item name="android:padding">14dp</item>
+        <item name="android:textColor">#000000</item>
+        <item name="android:textColorHint">#999999</item>
+        <item name="android:background">@drawable/edittext_shadow</item>
+    </style>
+</resources>
