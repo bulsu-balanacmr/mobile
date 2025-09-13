@@ -66,6 +66,37 @@
             android:background="@drawable/edittext_bg"
             android:padding="10dp" />
 
+        <!-- Order Type Selection -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order Type"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/orderTypeOptions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/radioPickup"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pickup"
+                android:checked="true" />
+
+            <RadioButton
+                android:id="@+id/radioDelivery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delivery"
+                android:layout_marginStart="16dp" />
+        </RadioGroup>
+
         <!-- Payment Method Selection -->
         <TextView
             android:layout_width="wrap_content"

@@ -1,59 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="18dp"
-    app:cardUseCompatPadding="true"
-    app:strokeColor="#ECEEF7"
-    app:strokeWidth="1dp">
+    android:layout_margin="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <FrameLayout
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/ivProduct"
             android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:background="#F1F4FF">
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/product_image"
+            android:src="@drawable/sample_cake" />
 
-            <ImageView
-                android:id="@+id/imgProduct"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerInside"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_cake_placeholder" />
-        </FrameLayout>
-
+        <!-- Product Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="6dp">
 
             <TextView
-                android:id="@+id/tvName"
+                android:id="@+id/tvProductName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Butterfly Sanctuary"
-                android:textColor="#232533"
-                android:textSize="15sp"
+                android:text="Chocolate Cake"
+                android:textColor="#1E1E1E"
+                android:textSize="14sp"
                 android:maxLines="2"
-                android:ellipsize="end"
-                android:textStyle="bold" />
+                android:ellipsize="end" />
 
-            <TextView
-                android:id="@+id/tvPrice"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Price: 1400.00"
-                android:textColor="#6B6F86"
-                android:textSize="13sp" />
+                android:orientation="horizontal"
+                android:gravity="space_between|center_vertical">
+
+                <TextView
+                    android:id="@+id/tvProductPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₱150"
+                    android:textColor="#FF6600"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/ivAddCart"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_cart"
+                    app:tint="#FF6600"
+                    android:contentDescription="@string/add_to_cart" />
+            </LinearLayout>
+
         </LinearLayout>
     </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+</androidx.cardview.widget.CardView>

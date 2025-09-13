@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F7F8FC"
-    tools:context=".ui.CakesActivity">
+    tools:context=".ProductsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -96,7 +96,6 @@
                     android:text="Cakes"
                     app:chipBackgroundColor="@color/chip_selector"
                     app:checkedIconVisible="false"
-                    app:ensureMinTouchTargetSize="true"
                     android:checked="true"/>
 
                 <com.google.android.material.chip.Chip
@@ -104,16 +103,14 @@
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:text="Pastry"
                     app:chipBackgroundColor="@color/chip_selector"
-                    app:checkedIconVisible="false"
-                    app:ensureMinTouchTargetSize="true"/>
+                    app:checkedIconVisible="false"/>
 
                 <com.google.android.material.chip.Chip
                     android:id="@+id/chipBread"
                     style="@style/Widget.MaterialComponents.Chip.Choice"
                     android:text="Bread"
                     app:chipBackgroundColor="@color/chip_selector"
-                    app:checkedIconVisible="false"
-                    app:ensureMinTouchTargetSize="true"/>
+                    app:checkedIconVisible="false"/>
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
@@ -154,7 +151,6 @@
                 android:orientation="horizontal"
                 android:gravity="center">
 
-                <!-- Home -->
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -163,7 +159,6 @@
                     app:tint="#FF6600"
                     android:padding="12dp" />
 
-                <!-- Menu -->
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -171,7 +166,6 @@
                     android:src="@drawable/ic_menu"
                     android:padding="17dp" />
 
-                <!-- Cart -->
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -180,7 +174,6 @@
                     app:tint="#555"
                     android:padding="12dp" />
 
-                <!-- User -->
                 <ImageView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
