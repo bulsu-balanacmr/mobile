@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *.iml
 .gradle
 /local.properties
@@ -13,3 +14,26 @@
 .externalNativeBuild
 .cxx
 local.properties
+=======
+# IDE directories
+.vscode/
+.idea/
+
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*~
+*.tmp
+*.log
+*.swp
+
+.env
+# Uploaded files
+user_faces/
+
+vendor/
+
+>>>>>>> a243206fc2e3c51f05f88d822e048e3e84b65cbf
